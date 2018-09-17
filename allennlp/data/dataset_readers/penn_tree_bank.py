@@ -69,7 +69,7 @@ class PennTreeBankConstituencySpanDatasetReader(DatasetReader):
             self._strip_functional_tags(parse)
             # This is un-needed and clutters the label space.
             # All the trees also contain a root S node.
-            if parse.label() == "VROOT":
+            if parse.label() == "TOP":
                 parse = parse[0]
             pos_tags = [x[1] for x in parse.pos()] if self._use_pos_tags else None
             yield self.text_to_instance(parse.leaves(), pos_tags, parse)
@@ -127,9 +127,9 @@ class PennTreeBankConstituencySpanDatasetReader(DatasetReader):
         if gold_tree is not None:
             gold_spans: Dict[Tuple[int, int], str] = {}
             self._get_gold_spans(gold_tree, 0, gold_spans)
-
         else:
             gold_spans = None
+
         for start, end in enumerate_spans(tokens):
             spans.append(SpanField(start, end, text_field))
 
