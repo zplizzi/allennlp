@@ -15,7 +15,7 @@ from allennlp.nn import InitializerApplicator, RegularizerApplicator
 from allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_logits
 from allennlp.nn.util import masked_softmax, get_lengths_from_binary_sequence_mask
 from allennlp.training.metrics import CategoricalAccuracy
-from allennlp.training.metrics import EvalbBracketingScorer, DEFAULT_EVALB_DIR
+from allennlp.training.metrics import Average
 from allennlp.common.checks import ConfigurationError
 
 
@@ -41,13 +41,18 @@ class LanguageModel(Model):
                  regularizer: Optional[RegularizerApplicator] = None):
         super(LanguageModel, self).__init__(vocab, regularizer)
 
-        self.num_classes = self.vocab.get_vocab_size("labels")
+        self.num_classes = self.vocab.get_vocab_size()
+        print(f"There are {self.num_classes} words in the vocab")
 
         self.embedding_dim = 256
         self.hidden_dim = 512
         self.embedding = torch.nn.Embedding(vocab.get_vocab_size(),
                                             self.embedding_dim)
         self.decoder = torch.nn.Linear(self.hidden_dim, self.num_classes)
+        self.loss = torch.nn.CrossEntropyLoss()
+
+        self.accuracy = CategoricalAccuracy()
+        self.perplexity = Average()
 
         self.LSTM = torch.nn.LSTM(
             input_size=self.embedding_dim,
@@ -64,11 +69,20 @@ class LanguageModel(Model):
             input_tokens,
             output_tokens,
     ) -> Dict[str, torch.Tensor]:
+        input_tokens = input_tokens["tokens"]
+        batch_size, num_sents = input_tokens.shape
+        output_tokens = output_tokens["tokens"]
         x = self.embedding(input_tokens)
         x, _ = self.LSTM(x)
         class_prob = self.decoder(x)
+        class_prob_flat = class_prob.view(batch_size * num_sents, -1)
+        targets_flat = output_tokens.view(-1)
         output_dict = {}
         output_dict["class_prob"] = class_prob
+        output_dict["loss"] = self.loss(class_prob_flat, targets_flat)
+
+        self.accuracy(class_prob, output_tokens)
+        self.perplexity(output_dict["loss"])
 
         # pylint: disable=arguments-differ
         return output_dict
@@ -76,8 +90,6 @@ class LanguageModel(Model):
     @overrides
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
         all_metrics = {}
-        all_metrics["tag_accuracy"] = self.tag_accuracy.get_metric(reset=reset)
-        if self._evalb_score is not None:
-            evalb_metrics = self._evalb_score.get_metric(reset=reset)
-            all_metrics.update(evalb_metrics)
+        all_metrics["accuracy"] = self.accuracy.get_metric(reset=reset)
+        all_metrics["ppl"] = torch.exp(self.perplexity.get_metric(reset=reset))
         return all_metrics

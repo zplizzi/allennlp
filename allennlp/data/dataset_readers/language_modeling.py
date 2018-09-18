@@ -13,7 +13,6 @@ from allennlp.data.token_indexers.token_indexer import TokenIndexer
 from allennlp.data.fields import TextField
 from allennlp.data.token_indexers import SingleIdTokenIndexer
 
-
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
@@ -41,6 +40,7 @@ class LanguageModelingReader(DatasetReader):
         a ``SingleIdTokenIndexer`` here, we use the first one you specify.  Otherwise, we create
         one with default parameters.
     """
+
     def __init__(self,
                  tokens_per_instance: int = None,
                  tokenizer: Tokenizer = None,
@@ -48,7 +48,9 @@ class LanguageModelingReader(DatasetReader):
                  lazy: bool = False) -> None:
         super().__init__(lazy)
         self._tokenizer = tokenizer or WordTokenizer()
-        self._token_indexers = token_indexers or {"tokens": SingleIdTokenIndexer()}
+        self._token_indexers = token_indexers or {
+            "tokens": SingleIdTokenIndexer()
+        }
         self._tokens_per_instance = tokens_per_instance
 
         # No matter how you want to represent the input, we'll always represent the output as a
@@ -68,25 +70,22 @@ class LanguageModelingReader(DatasetReader):
         # if `file_path` is a URL, redirect to the cache
         file_path = cached_path(file_path)
 
+        print("starting read")
         with open(file_path, "r") as text_file:
             instance_strings = text_file.readlines()
 
-        if self._tokens_per_instance is not None:
-            all_text = " ".join([x.replace("\n", " ").strip() for x in instance_strings])
-            tokenized_text = self._tokenizer.tokenize(all_text)
-            num_tokens = self._tokens_per_instance + 1
-            tokenized_strings = []
-            logger.info("Creating dataset from all text in file: %s", file_path)
-            for index in Tqdm.tqdm(range(0, len(tokenized_text) - num_tokens, num_tokens - 1)):
-                tokenized_strings.append(tokenized_text[index:(index + num_tokens)])
-        else:
-            tokenized_strings = [self._tokenizer.tokenize(s) for s in instance_strings]
+        print("read file")
 
-        for tokenized_string in tokenized_strings:
-            input_field = TextField(tokenized_string[:-1], self._token_indexers)
-            output_field = TextField(tokenized_string[1:], self._output_indexer)
-            yield Instance({'input_tokens': input_field,
-                            'output_tokens': output_field})
+        for string in instance_strings:
+            tokenized_string = self._tokenizer.tokenize(string)
+            input_field = TextField(tokenized_string[:-1],
+                                    self._token_indexers)
+            output_field = TextField(tokenized_string[1:],
+                                     self._output_indexer)
+            yield Instance({
+                'input_tokens': input_field,
+                'output_tokens': output_field
+            })
 
     @overrides
     def text_to_instance(self, sentence: str) -> Instance:  # type: ignore
@@ -94,4 +93,7 @@ class LanguageModelingReader(DatasetReader):
         tokenized_string = self._tokenizer.tokenize(sentence)
         input_field = TextField(tokenized_string[:-1], self._token_indexers)
         output_field = TextField(tokenized_string[1:], self._output_indexer)
-        return Instance({'input_tokens': input_field, 'output_tokens': output_field})
+        return Instance({
+            'input_tokens': input_field,
+            'output_tokens': output_field
+        })

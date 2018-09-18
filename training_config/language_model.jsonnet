@@ -1,17 +1,24 @@
 {
     "dataset_reader":{
         "type":"language_modeling",
+		"tokenizer": {
+			"type": "word",
+			"word_splitter": "just_spaces"
+		},
+		"lazy": "true"
     },
+	"vocabulary": {
+			"directory_path": "/home/zplizzi/temp/allennlp/vocab/vocabulary/"
+		},
     "train_data_path": "/home/zplizzi/data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled/news.en-00001-of-00100",
-    "validation_data_path": std.extVar('PTB_DEV_PATH'),
-    "test_data_path": std.extVar('PTB_TEST_PATH'),
+    "validation_data_path": "/home/zplizzi/data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled/news.en-00001-of-00100",
     "model": {
       "type": "language_model",
     },
     "iterator": {
       "type": "bucket",
-      "sorting_keys": [["tokens", "num_tokens"]],
-      "batch_size" : 32
+      "sorting_keys": [["input_tokens", "num_tokens"]],
+      "batch_size" : 8
     },
     "trainer": {
       "learning_rate_scheduler": {
@@ -22,7 +29,7 @@
       "num_epochs": 150,
       "grad_norm": 5.0,
       "patience": 20,
-      "validation_metric": "+evalb_f1_measure",
+      "validation_metric": "+accuracy",
       "cuda_device": 0,
       "optimizer": {
         "type": "adadelta",
@@ -31,4 +38,3 @@
       }
     }
   }
-
