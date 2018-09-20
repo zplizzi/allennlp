@@ -1,6 +1,6 @@
 {
     "dataset_reader":{
-        "type":"language_modeling",
+        "type":"billion_words",
 		"tokenizer": {
 			"type": "word",
 			"word_splitter": "just_spaces"
@@ -10,8 +10,8 @@
 	"vocabulary": {
 			"directory_path": "/home/zplizzi/temp/allennlp/vocab/vocabulary/"
 		},
-    "train_data_path": "/home/zplizzi/data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled/news.en-00001-of-00100",
-    "validation_data_path": "/home/zplizzi/data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled/news.en-00001-of-00100",
+    "train_data_path": "/home/zplizzi/data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled/",
+    "validation_data_path": "/home/zplizzi/data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled/",
     "model": {
       "type": "language_model",
     },
