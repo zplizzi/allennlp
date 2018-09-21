@@ -61,17 +61,19 @@ class BillionWordsReader(DatasetReader):
 
     @overrides
     def _read(self, dataset_path: str):
-        file_ids = list(range(1, 100))
+        file_ids = list(range(1, 2))
         if self._shuffle:
             random.shuffle(file_ids)
 
         for file_id in file_ids:
             with open(filename(dataset_path, file_id), "r") as text_file:
                 lines = text_file.readlines()
+            print("read file")
 
             lines = [line.strip() for line in lines]
             if self._shuffle:
                 random.shuffle(lines)
+
 
             for line in lines:
                 tokenized_string = self._tokenizer.tokenize(line)
@@ -80,8 +82,8 @@ class BillionWordsReader(DatasetReader):
                 output_field = TextField(tokenized_string[1:],
                                          self._output_indexer)
                 yield Instance({
-                    'input_tokens': input_field,
-                    'output_tokens': output_field
+                    'tokens': input_field,
+                    # 'output_tokens': output_field
                 })
 
     @overrides

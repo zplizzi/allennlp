@@ -18,6 +18,13 @@ from allennlp.training.metrics import CategoricalAccuracy
 from allennlp.training.metrics import Average
 from allennlp.common.checks import ConfigurationError
 
+def repackage_hidden(h):
+    """Wraps hidden states in new Tensors, to detach them from their history."""
+    if isinstance(h, torch.Tensor):
+        return h.detach()
+    else:
+        return tuple(repackage_hidden(v) for v in h)
+
 
 @Model.register("language_model")
 class LanguageModel(Model):
@@ -69,11 +76,20 @@ class LanguageModel(Model):
             input_tokens,
             output_tokens,
     ) -> Dict[str, torch.Tensor]:
+
+        try:
+            self.lstm_state = repackage_hidden(self.lstm_state)
+        except AttributeError:
+            pass
+
         input_tokens = input_tokens["tokens"]
         batch_size, num_sents = input_tokens.shape
         output_tokens = output_tokens["tokens"]
         x = self.embedding(input_tokens)
-        x, _ = self.LSTM(x)
+        try:
+            x, self.lstm_state = self.LSTM(x, self.lstm_state)
+        except AttributeError:
+            x, self.lstm_state = self.LSTM(x)
         class_prob = self.decoder(x)
         class_prob_flat = class_prob.view(batch_size * num_sents, -1)
         targets_flat = output_tokens.view(-1)

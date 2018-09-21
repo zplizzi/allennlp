@@ -8,7 +8,7 @@
 		"lazy": "true"
     },
 	"vocabulary": {
-			"directory_path": "/home/zplizzi/temp/allennlp/vocab/vocabulary/"
+			"directory_path": "/home/zplizzi/temp/allennlp/vocab2/vocabulary/"
 		},
     "train_data_path": "/home/zplizzi/data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled/",
     "validation_data_path": "/home/zplizzi/data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled/",
@@ -16,9 +16,8 @@
       "type": "language_model",
     },
     "iterator": {
-      "type": "bucket",
-      "sorting_keys": [["input_tokens", "num_tokens"]],
-      "batch_size" : 8
+      "type": "my",
+      "batch_size" : 8,
     },
     "trainer": {
       "learning_rate_scheduler": {

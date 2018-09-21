@@ -6,6 +6,9 @@ allennlp.egg-info/
 build/
 dist/
 
+*.swo
+*.swn
+
 
 # dev tools
 
