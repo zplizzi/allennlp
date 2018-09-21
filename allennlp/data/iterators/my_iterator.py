@@ -25,7 +25,7 @@ class MyIterator(DataIterator):
     def _create_batches(self, instances: Iterable[Instance], shuffle: bool):
         instances = iter(instances)
         sequence_length = 1000
-        bptt_length = 40
+        bptt_length = 20
         token_indexer = {"tokens": SingleIdTokenIndexer()}
         assert sequence_length % bptt_length == 0
 

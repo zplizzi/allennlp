@@ -4,6 +4,7 @@ from overrides import overrides
 import torch
 from torch.nn.modules.linear import Linear
 from nltk import Tree
+import numpy as np
 
 from allennlp.common.checks import check_dimensions_match
 from allennlp.data import Vocabulary
@@ -89,6 +90,7 @@ class LanguageModel(Model):
         try:
             x, self.lstm_state = self.LSTM(x, self.lstm_state)
         except AttributeError:
+            print("not using hidden state")
             x, self.lstm_state = self.LSTM(x)
         class_prob = self.decoder(x)
         class_prob_flat = class_prob.view(batch_size * num_sents, -1)
@@ -98,7 +100,7 @@ class LanguageModel(Model):
         output_dict["loss"] = self.loss(class_prob_flat, targets_flat)
 
         self.accuracy(class_prob, output_tokens)
-        self.perplexity(output_dict["loss"])
+        self.perplexity(output_dict["loss"].item())
 
         # pylint: disable=arguments-differ
         return output_dict
@@ -107,5 +109,5 @@ class LanguageModel(Model):
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
         all_metrics = {}
         all_metrics["accuracy"] = self.accuracy.get_metric(reset=reset)
-        all_metrics["ppl"] = torch.exp(self.perplexity.get_metric(reset=reset))
+        all_metrics["ppl"] = np.exp(self.perplexity.get_metric(reset=reset))
         return all_metrics

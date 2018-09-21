@@ -71,6 +71,7 @@ class BillionWordsReader(DatasetReader):
             print("read file")
 
             lines = [line.strip() for line in lines]
+            #lines = lines[:500]
             if self._shuffle:
                 random.shuffle(lines)
 

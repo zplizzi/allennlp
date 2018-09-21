@@ -910,6 +910,7 @@ class Trainer:
             be copied to a "best.th" file. The value of this flag should
             be based on some validation metric computed by your model.
         """
+        print("saving checkpoint")
         if self._serialization_dir is not None:
             model_path = os.path.join(self._serialization_dir,
                                       "model_state_epoch_{}.th".format(epoch))
